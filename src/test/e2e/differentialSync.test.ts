@@ -1,8 +1,9 @@
+import { jest } from '@jest/globals';
 import { AddressInfo } from 'net';
 import { err, ok, Result } from 'neverthrow';
 import { RPCClient, RPCHandler, RPCServer } from '~/network/rpc/json';
 import { NodeMetadata } from '~/network/sync/merkleTrie';
-import { SyncEngine } from '~/network/sync/syncEngine';
+import { SyncEngine, SYNC_THRESHOLD_IN_SECONDS } from '~/network/sync/syncEngine';
 import { jestRocksDB } from '~/storage/db/jestUtils';
 import Engine from '~/storage/engine';
 import { populateEngine, UserInfo } from '~/storage/engine/mock';
@@ -228,6 +229,14 @@ describe('differentialSync', () => {
     async () => {
       await hubBSyncEngine.performSync(hubASyncEngine.snapshot.excludedHashes, hubARPCClient);
 
+      /**
+       * Force the time to the middle of two sync thresholds to avoid the race
+       * condition where this test happens to run across a boundary.
+       */
+      const syncThresholdMS = SYNC_THRESHOLD_IN_SECONDS * 1000;
+      jest.useFakeTimers();
+      jest.setSystemTime(Math.floor(Date.now() / syncThresholdMS) * syncThresholdMS + syncThresholdMS / 2);
+
       // Merge a signer remove within sync threshold (should not be picked up for sync)
       const now = Date.now();
       const message = await Factories.SignerRemove.create(
@@ -237,9 +246,14 @@ describe('differentialSync', () => {
       const res = await hubAStorageEngine.mergeMessage(message);
       expect(res.isOk()).toBeTruthy();
 
+      // simulate some time pasing
+      jest.setSystemTime(Date.now() + syncThresholdMS / 4);
+
       const serverSnapshot = hubASyncEngine.snapshot;
       expect(hubASyncEngine.snapshotTimestamp).toBeLessThanOrEqual(now / 1000);
       expect(hubBSyncEngine.shouldSync(serverSnapshot.excludedHashes)).toBeTruthy();
+
+      jest.useRealTimers();
 
       await hubBSyncEngine.performSync(serverSnapshot.excludedHashes, hubARPCClient);
       // Wait a few seconds for the remove to delete all messages

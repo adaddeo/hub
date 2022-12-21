@@ -10,7 +10,7 @@ import { logger } from '~/utils/logger';
 
 // Number of seconds to wait for the network to "settle" before syncing. We will only
 // attempt to sync messages that are older than this time.
-const SYNC_THRESHOLD_IN_SECONDS = 10;
+export const SYNC_THRESHOLD_IN_SECONDS = 10;
 const HASHES_PER_FETCH = 50;
 
 const log = logger.child({
