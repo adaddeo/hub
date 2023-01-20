@@ -24,6 +24,7 @@ export type MessageData<TBody = MessageBody, TType = flatbuffers.MessageType> = 
   flatbuffer: flatbuffers.MessageData;
   body: TBody;
   type: TType;
+  /** seconds since the Farcaster epoch */
   timestamp: number;
   fid: number;
   network: flatbuffers.FarcasterNetwork;
