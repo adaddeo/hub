@@ -90,6 +90,16 @@ describe('makeReactionRemoveData', () => {
     const isValid = await validations.validateMessageData(data._unsafeUnwrap().flatbuffer);
     expect(isValid.isOk()).toBeTruthy();
   });
+
+  test('succeeds when tsHash starts with 0x00', async () => {
+    const tsHashHex = '0x00' + Factories.TsHashHex.build().substring(4);
+    const data = await builders.makeReactionRemoveData(
+      { type: Factories.ReactionType.build(), target: { fid, tsHash: tsHashHex } },
+      { fid, timestamp, network }
+    );
+    const isValid = await validations.validateMessageData(data._unsafeUnwrap().flatbuffer);
+    expect(isValid.isOk()).toBeTruthy();
+  });
 });
 
 describe('makeReactionAdd', () => {
