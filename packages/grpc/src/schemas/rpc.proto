@@ -156,7 +156,7 @@ service HubService {
   rpc GetAllVerificationMessagesByFid(FidRequest) returns (MessagesResponse);
   rpc GetAllSignerMessagesByFid(FidRequest) returns (MessagesResponse);
   rpc GetAllUserDataMessagesByFid(FidRequest) returns (MessagesResponse);
-  
+
   // Sync Methods
   rpc GetInfo(Empty) returns (HubInfoResponse);
   rpc GetAllSyncIdsByPrefix(TrieNodePrefix) returns (SyncIds);

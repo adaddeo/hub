@@ -1,3 +1,4 @@
+import * as grpc from '@farcaster/grpc';
 import * as protobufs from '@farcaster/protobufs';
 import { Factories, getHubRpcClient, HubError, HubRpcClient } from '@farcaster/utils';
 import SyncEngine from '~/network/sync/syncEngine';
@@ -67,7 +68,7 @@ describe('getReaction', () => {
     await engine.mergeMessage(reactionAddLike);
 
     const result = await client.getReaction(
-      protobufs.ReactionRequest.create({ fid, reactionType: reactionAddLike.data.reactionBody.type, castId })
+      grpc.ReactionRequest.create({ fid, reactionType: reactionAddLike.data.reactionBody.type, castId })
     );
 
     expect(protobufs.Message.toJSON(result._unsafeUnwrap())).toEqual(protobufs.Message.toJSON(reactionAddLike));
@@ -77,7 +78,7 @@ describe('getReaction', () => {
     await engine.mergeMessage(reactionAddRecast);
 
     const result = await client.getReaction(
-      protobufs.ReactionRequest.create({ fid, reactionType: reactionAddRecast.data.reactionBody.type, castId })
+      grpc.ReactionRequest.create({ fid, reactionType: reactionAddRecast.data.reactionBody.type, castId })
     );
 
     expect(protobufs.Message.toJSON(result._unsafeUnwrap())).toEqual(protobufs.Message.toJSON(reactionAddRecast));
@@ -85,14 +86,14 @@ describe('getReaction', () => {
 
   test('fails if reaction is missing', async () => {
     const result = await client.getReaction(
-      protobufs.ReactionRequest.create({ fid, reactionType: reactionAddRecast.data.reactionBody.type, castId })
+      grpc.ReactionRequest.create({ fid, reactionType: reactionAddRecast.data.reactionBody.type, castId })
     );
     expect(result._unsafeUnwrapErr().errCode).toEqual('not_found');
   });
 
   test('fails with invalid reaction type', async () => {
     const result = await client.getReaction(
-      protobufs.ReactionRequest.create({
+      grpc.ReactionRequest.create({
         fid,
         castId,
       })
@@ -106,7 +107,7 @@ describe('getReaction', () => {
   test('fails without cast', async () => {
     const castId = Factories.CastId.build({ fid: 0, hash: new Uint8Array() });
     const result = await client.getReaction(
-      protobufs.ReactionRequest.create({ fid, castId: castId, reactionType: protobufs.ReactionType.REACTION_TYPE_LIKE })
+      grpc.ReactionRequest.create({ fid, castId: castId, reactionType: protobufs.ReactionType.REACTION_TYPE_LIKE })
     );
     expect(result._unsafeUnwrapErr()).toEqual(
       new HubError('bad_request.validation_failure', 'fid is missing, hash is missing')
@@ -116,7 +117,7 @@ describe('getReaction', () => {
   test('fails without fid', async () => {
     const castId = Factories.CastId.build();
     const result = await client.getReaction(
-      protobufs.ReactionRequest.create({ castId, reactionType: protobufs.ReactionType.REACTION_TYPE_LIKE })
+      grpc.ReactionRequest.create({ castId, reactionType: protobufs.ReactionType.REACTION_TYPE_LIKE })
     );
     expect(result._unsafeUnwrapErr()).toEqual(new HubError('bad_request.validation_failure', 'fid is missing'));
   });
@@ -134,7 +135,7 @@ describe('getReaction', () => {
       });
 
       test('succeeds without type', async () => {
-        const reactions = await client.getReactionsByFid(protobufs.ReactionsByFidRequest.create({ fid }));
+        const reactions = await client.getReactionsByFid(grpc.ReactionsByFidRequest.create({ fid }));
         expect(reactions._unsafeUnwrap().messages.map((m) => protobufs.Message.toJSON(m))).toEqual(
           [reactionAddLike, reactionAddRecast].map((m) => protobufs.Message.toJSON(m))
         );
@@ -142,7 +143,7 @@ describe('getReaction', () => {
 
       test('succeeds with type Like', async () => {
         const reactions = await client.getReactionsByFid(
-          protobufs.ReactionsByFidRequest.create({ fid, reactionType: protobufs.ReactionType.REACTION_TYPE_LIKE })
+          grpc.ReactionsByFidRequest.create({ fid, reactionType: protobufs.ReactionType.REACTION_TYPE_LIKE })
         );
 
         expect(reactions._unsafeUnwrap().messages.map((m) => protobufs.Message.toJSON(m))).toEqual(
@@ -152,7 +153,7 @@ describe('getReaction', () => {
 
       test('succeeds with type Recast', async () => {
         const reactions = await client.getReactionsByFid(
-          protobufs.ReactionsByFidRequest.create({ fid, reactionType: protobufs.ReactionType.REACTION_TYPE_RECAST })
+          grpc.ReactionsByFidRequest.create({ fid, reactionType: protobufs.ReactionType.REACTION_TYPE_RECAST })
         );
         expect(reactions._unsafeUnwrap().messages.map((m) => protobufs.Message.toJSON(m))).toEqual(
           [reactionAddRecast].map((m) => protobufs.Message.toJSON(m))
@@ -161,7 +162,7 @@ describe('getReaction', () => {
     });
 
     test('returns empty array without messages', async () => {
-      const reactions = await client.getReactionsByFid(protobufs.ReactionsByFidRequest.create({ fid }));
+      const reactions = await client.getReactionsByFid(grpc.ReactionsByFidRequest.create({ fid }));
       expect(reactions._unsafeUnwrap().messages).toEqual([]);
     });
   });
@@ -179,7 +180,7 @@ describe('getReaction', () => {
       });
 
       test('succeeds without type', async () => {
-        const reactions = await client.getReactionsByCast(protobufs.ReactionsByCastRequest.create({ castId }));
+        const reactions = await client.getReactionsByCast(grpc.ReactionsByCastRequest.create({ castId }));
         expect(reactions._unsafeUnwrap().messages.map((m) => protobufs.Message.toJSON(m))).toEqual(
           [reactionAddLike, reactionAddRecast].map((m) => protobufs.Message.toJSON(m))
         );
@@ -187,8 +188,9 @@ describe('getReaction', () => {
 
       test('succeeds with type Like', async () => {
         const reactions = await client.getReactionsByCast(
-          protobufs.ReactionsByCastRequest.create({ castId, reactionType: protobufs.ReactionType.REACTION_TYPE_LIKE })
+          grpc.ReactionsByCastRequest.create({ castId, reactionType: protobufs.ReactionType.REACTION_TYPE_LIKE })
         );
+
         expect(reactions._unsafeUnwrap().messages.map((m) => protobufs.Message.toJSON(m))).toEqual(
           [reactionAddLike].map((m) => protobufs.Message.toJSON(m))
         );
@@ -196,7 +198,7 @@ describe('getReaction', () => {
 
       test('succeeds with type Recast', async () => {
         const reactions = await client.getReactionsByCast(
-          protobufs.ReactionsByCastRequest.create({ castId, reactionType: protobufs.ReactionType.REACTION_TYPE_RECAST })
+          grpc.ReactionsByCastRequest.create({ castId, reactionType: protobufs.ReactionType.REACTION_TYPE_RECAST })
         );
         expect(reactions._unsafeUnwrap().messages.map((m) => protobufs.Message.toJSON(m))).toEqual(
           [reactionAddRecast].map((m) => protobufs.Message.toJSON(m))
@@ -205,7 +207,7 @@ describe('getReaction', () => {
     });
 
     test('returns empty array without messages', async () => {
-      const reactions = await client.getReactionsByCast(protobufs.ReactionsByCastRequest.create({ castId }));
+      const reactions = await client.getReactionsByCast(grpc.ReactionsByCastRequest.create({ castId }));
       expect(reactions._unsafeUnwrap().messages).toEqual([]);
     });
   });

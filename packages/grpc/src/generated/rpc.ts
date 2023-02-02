@@ -1,5 +1,17 @@
 /* eslint-disable */
 import {
+  CastId,
+  IdRegistryEvent,
+  Message,
+  NameRegistryEvent,
+  ReactionType,
+  reactionTypeFromJSON,
+  reactionTypeToJSON,
+  UserDataType,
+  userDataTypeFromJSON,
+  userDataTypeToJSON,
+} from "@farcaster/protobufs";
+import {
   CallOptions,
   ChannelCredentials,
   Client,
@@ -15,18 +27,6 @@ import {
 } from "@grpc/grpc-js";
 import Long from "long";
 import _m0 from "protobufjs/minimal";
-import { IdRegistryEvent } from "./id_registry_event";
-import {
-  CastId,
-  Message,
-  ReactionType,
-  reactionTypeFromJSON,
-  reactionTypeToJSON,
-  UserDataType,
-  userDataTypeFromJSON,
-  userDataTypeToJSON,
-} from "./message";
-import { NameRegistryEvent } from "./name_registry_event";
 
 export enum EventType {
   EVENT_TYPE_NONE = 0,

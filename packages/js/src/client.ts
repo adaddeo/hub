@@ -1,3 +1,4 @@
+import * as grpc from '@farcaster/grpc';
 import * as protobufs from '@farcaster/protobufs';
 import { getHubRpcClient, HubAsyncResult, HubResult, HubRpcClient } from '@farcaster/utils';
 import { err, Result } from 'neverthrow';
@@ -5,7 +6,7 @@ import * as types from './types';
 import * as utils from './utils';
 
 export type EventFilters = {
-  eventTypes?: protobufs.EventType[];
+  eventTypes?: grpc.EventType[];
 };
 
 const deserializeCall = async <TDeserialized, TProtobuf>(
@@ -24,7 +25,7 @@ const wrapGrpcMessageCall = async <T extends types.Message>(
 };
 
 const wrapGrpcMessagesCall = async <T extends types.Message>(
-  call: HubAsyncResult<protobufs.MessagesResponse>
+  call: HubAsyncResult<grpc.MessagesResponse>
 ): HubAsyncResult<T[]> => {
   const response = await call;
   return response.andThen((messagesResponse) => {
@@ -65,7 +66,7 @@ export class Client {
   }
 
   async getCastsByFid(fid: number): HubAsyncResult<types.CastAddMessage[]> {
-    const fidRequest = protobufs.FidRequest.create({ fid });
+    const fidRequest = grpc.FidRequest.create({ fid });
     return wrapGrpcMessagesCall(this._grpcClient.getCastsByFid(fidRequest));
   }
 
@@ -79,7 +80,7 @@ export class Client {
   }
 
   async getCastsByMention(mentionFid: number): HubAsyncResult<types.CastAddMessage[]> {
-    const fidRequest = protobufs.FidRequest.create({ fid: mentionFid });
+    const fidRequest = grpc.FidRequest.create({ fid: mentionFid });
     return wrapGrpcMessagesCall(this._grpcClient.getCastsByMention(fidRequest));
   }
 
@@ -88,17 +89,17 @@ export class Client {
   // /* -------------------------------------------------------------------------- */
 
   async getAmp(fid: number, targetFid: number): HubAsyncResult<types.AmpAddMessage> {
-    const ampRequest = protobufs.AmpRequest.create({ fid, targetFid });
+    const ampRequest = grpc.AmpRequest.create({ fid, targetFid });
     return wrapGrpcMessageCall(this._grpcClient.getAmp(ampRequest));
   }
 
   async getAmpsByFid(fid: number): HubAsyncResult<types.AmpAddMessage[]> {
-    const fidRequest = protobufs.FidRequest.create({ fid });
+    const fidRequest = grpc.FidRequest.create({ fid });
     return wrapGrpcMessagesCall(this._grpcClient.getAmpsByFid(fidRequest));
   }
 
   async getAmpsByUser(targetFid: number): HubAsyncResult<types.AmpAddMessage[]> {
-    const fidRequest = protobufs.FidRequest.create({ fid: targetFid });
+    const fidRequest = grpc.FidRequest.create({ fid: targetFid });
     return wrapGrpcMessagesCall(this._grpcClient.getAmpsByUser(fidRequest));
   }
 
@@ -116,7 +117,7 @@ export class Client {
       return err(serializedCastId.error);
     }
 
-    const reactionRequest = protobufs.ReactionRequest.create({
+    const reactionRequest = grpc.ReactionRequest.create({
       fid,
       reactionType: type,
       castId: serializedCastId.value,
@@ -125,7 +126,7 @@ export class Client {
   }
 
   async getReactionsByFid(fid: number, type?: types.ReactionType): HubAsyncResult<types.ReactionAddMessage[]> {
-    const request = protobufs.ReactionsByFidRequest.create({
+    const request = grpc.ReactionsByFidRequest.create({
       fid,
       reactionType: type ?? types.ReactionType.REACTION_TYPE_NONE,
     });
@@ -137,7 +138,7 @@ export class Client {
     if (serializedCastId.isErr()) {
       return err(serializedCastId.error);
     }
-    const request = protobufs.ReactionsByCastRequest.create({
+    const request = grpc.ReactionsByCastRequest.create({
       castId: serializedCastId.value,
       reactionType: type ?? types.ReactionType.REACTION_TYPE_NONE,
     });
@@ -153,12 +154,12 @@ export class Client {
     if (serializedAddress.isErr()) {
       return err(serializedAddress.error);
     }
-    const request = protobufs.VerificationRequest.create({ fid, address: serializedAddress.value });
+    const request = grpc.VerificationRequest.create({ fid, address: serializedAddress.value });
     return wrapGrpcMessageCall(this._grpcClient.getVerification(request));
   }
 
   async getVerificationsByFid(fid: number): HubAsyncResult<types.VerificationAddEthAddressMessage[]> {
-    const request = protobufs.FidRequest.create({ fid });
+    const request = grpc.FidRequest.create({ fid });
     return wrapGrpcMessagesCall(this._grpcClient.getVerificationsByFid(request));
   }
 
@@ -171,17 +172,17 @@ export class Client {
     if (serializedSigner.isErr()) {
       return err(serializedSigner.error);
     }
-    const request = protobufs.SignerRequest.create({ fid, signer: serializedSigner.value });
+    const request = grpc.SignerRequest.create({ fid, signer: serializedSigner.value });
     return wrapGrpcMessageCall(this._grpcClient.getSigner(request));
   }
 
   async getSignersByFid(fid: number): HubAsyncResult<types.SignerAddMessage[]> {
-    const request = protobufs.FidRequest.create({ fid });
+    const request = grpc.FidRequest.create({ fid });
     return wrapGrpcMessagesCall(this._grpcClient.getSignersByFid(request));
   }
 
   async getIdRegistryEvent(fid: number): HubAsyncResult<types.IdRegistryEvent> {
-    const request = protobufs.FidRequest.create({ fid });
+    const request = grpc.FidRequest.create({ fid });
     return deserializeCall(this._grpcClient.getIdRegistryEvent(request), utils.deserializeIdRegistryEvent);
   }
 
@@ -190,12 +191,12 @@ export class Client {
   // /* -------------------------------------------------------------------------- */
 
   async getUserData(fid: number, type: types.UserDataType): HubAsyncResult<types.UserDataAddMessage> {
-    const request = protobufs.UserDataRequest.create({ fid, userDataType: type });
+    const request = grpc.UserDataRequest.create({ fid, userDataType: type });
     return wrapGrpcMessageCall(this._grpcClient.getUserData(request));
   }
 
   async getUserDataByFid(fid: number): HubAsyncResult<types.UserDataAddMessage[]> {
-    const request = protobufs.FidRequest.create({ fid });
+    const request = grpc.FidRequest.create({ fid });
     return wrapGrpcMessagesCall(this._grpcClient.getUserDataByFid(request));
   }
 
@@ -205,7 +206,7 @@ export class Client {
     if (serializedFname.isErr()) {
       return err(serializedFname.error);
     }
-    const request = protobufs.NameRegistryEventRequest.create({ name: serializedFname.value });
+    const request = grpc.NameRegistryEventRequest.create({ name: serializedFname.value });
     return deserializeCall(this._grpcClient.getNameRegistryEvent(request), utils.deserializeNameRegistryEvent);
   }
 
@@ -214,36 +215,36 @@ export class Client {
   // /* -------------------------------------------------------------------------- */
 
   async getAllCastMessagesByFid(fid: number): HubAsyncResult<(types.CastAddMessage | types.CastRemoveMessage)[]> {
-    const request = protobufs.FidRequest.create({ fid });
+    const request = grpc.FidRequest.create({ fid });
     return wrapGrpcMessagesCall(this._grpcClient.getAllCastMessagesByFid(request));
   }
 
   async getAllAmpMessagesByFid(fid: number): HubAsyncResult<(types.AmpAddMessage | types.AmpRemoveMessage)[]> {
-    const request = protobufs.FidRequest.create({ fid });
+    const request = grpc.FidRequest.create({ fid });
     return wrapGrpcMessagesCall(this._grpcClient.getAllAmpMessagesByFid(request));
   }
 
   async getAllReactionMessagesByFid(
     fid: number
   ): HubAsyncResult<(types.ReactionAddMessage | types.ReactionRemoveMessage)[]> {
-    const request = protobufs.FidRequest.create({ fid });
+    const request = grpc.FidRequest.create({ fid });
     return wrapGrpcMessagesCall(this._grpcClient.getAllReactionMessagesByFid(request));
   }
 
   async getAllVerificationMessagesByFid(
     fid: number
   ): HubAsyncResult<(types.VerificationAddEthAddressMessage | types.VerificationRemoveMessage)[]> {
-    const request = protobufs.FidRequest.create({ fid });
+    const request = grpc.FidRequest.create({ fid });
     return wrapGrpcMessagesCall(this._grpcClient.getAllVerificationMessagesByFid(request));
   }
 
   async getAllSignerMessagesByFid(fid: number): HubAsyncResult<(types.SignerAddMessage | types.SignerRemoveMessage)[]> {
-    const request = protobufs.FidRequest.create({ fid });
+    const request = grpc.FidRequest.create({ fid });
     return wrapGrpcMessagesCall(this._grpcClient.getAllSignerMessagesByFid(request));
   }
 
   async getAllUserDataMessagesByFid(fid: number): HubAsyncResult<types.UserDataAddMessage[]> {
-    const request = protobufs.FidRequest.create({ fid });
+    const request = grpc.FidRequest.create({ fid });
     return wrapGrpcMessagesCall(this._grpcClient.getAllUserDataMessagesByFid(request));
   }
 
@@ -255,7 +256,7 @@ export class Client {
    * Data from this stream can be parsed using `deserializeEventResponse`.
    */
   async subscribe(filters: EventFilters = {}) {
-    const request = protobufs.SubscribeRequest.create({ ...filters });
+    const request = grpc.SubscribeRequest.create({ ...filters });
     return this._grpcClient.subscribe(request);
   }
 }

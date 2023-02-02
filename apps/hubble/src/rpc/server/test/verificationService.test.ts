@@ -1,3 +1,4 @@
+import * as grpc from '@farcaster/grpc';
 import * as protobufs from '@farcaster/protobufs';
 import { Factories, getHubRpcClient, HubError, HubRpcClient } from '@farcaster/utils';
 import SyncEngine from '~/network/sync/syncEngine';
@@ -59,7 +60,7 @@ describe('getVerification', () => {
     expect(r.isOk()).toBeTruthy();
 
     const result = await client.getVerification(
-      protobufs.VerificationRequest.create({
+      grpc.VerificationRequest.create({
         fid,
         address: verificationAdd.data.verificationAddEthAddressBody.address ?? new Uint8Array(),
       })
@@ -69,7 +70,7 @@ describe('getVerification', () => {
 
   test('fails if verification is missing', async () => {
     const result = await client.getVerification(
-      protobufs.VerificationRequest.create({
+      grpc.VerificationRequest.create({
         fid,
         address: verificationAdd.data.verificationAddEthAddressBody.address ?? new Uint8Array(),
       })
@@ -79,7 +80,7 @@ describe('getVerification', () => {
 
   test('fails without address', async () => {
     const result = await client.getVerification(
-      protobufs.VerificationRequest.create({
+      grpc.VerificationRequest.create({
         fid,
         address: new Uint8Array(),
       })
@@ -89,7 +90,7 @@ describe('getVerification', () => {
 
   test('fails without fid', async () => {
     const result = await client.getVerification(
-      protobufs.VerificationRequest.create({
+      grpc.VerificationRequest.create({
         address: verificationAdd.data.verificationAddEthAddressBody.address ?? new Uint8Array(),
       })
     );
@@ -107,14 +108,14 @@ describe('getVerificationsByFid', () => {
     const result = await engine.mergeMessage(verificationAdd);
     expect(result.isOk()).toBeTruthy();
 
-    const verifications = await client.getVerificationsByFid(protobufs.FidRequest.create({ fid }));
+    const verifications = await client.getVerificationsByFid(grpc.FidRequest.create({ fid }));
     expect(verifications._unsafeUnwrap().messages.map((m) => protobufs.Message.toJSON(m))).toEqual(
       [verificationAdd].map((m) => protobufs.Message.toJSON(m))
     );
   });
 
   test('returns empty array without messages', async () => {
-    const verifications = await client.getVerificationsByFid(protobufs.FidRequest.create({ fid }));
+    const verifications = await client.getVerificationsByFid(grpc.FidRequest.create({ fid }));
     expect(verifications._unsafeUnwrap().messages).toEqual([]);
   });
 });

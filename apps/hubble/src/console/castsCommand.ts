@@ -1,4 +1,5 @@
-import { CastId, FidRequest, Message } from '@farcaster/protobufs';
+import { FidRequest } from '@farcaster/grpc';
+import { CastId, Message } from '@farcaster/protobufs';
 import { HubError, HubRpcClient } from '@farcaster/utils';
 import { ConsoleCommandInterface } from './console';
 

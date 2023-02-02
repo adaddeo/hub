@@ -1,3 +1,4 @@
+import * as grpc from '@farcaster/grpc';
 import * as protobufs from '@farcaster/protobufs';
 import { Factories, getHubRpcClient, HubRpcClient } from '@farcaster/utils';
 import { APP_NICKNAME, APP_VERSION } from '~/hubble';
@@ -100,14 +101,14 @@ describe('Multi peer sync engine', () => {
     await engine1.mergeMessage(signerAdd);
 
     // Get info first
-    const info = await clientForServer1.getInfo(protobufs.Empty.create());
+    const info = await clientForServer1.getInfo(grpc.Empty.create());
     expect(info.isOk()).toBeTruthy();
     const infoResult = info._unsafeUnwrap();
     expect(infoResult.version).toEqual(APP_VERSION);
     expect(infoResult.nickname).toEqual(APP_NICKNAME);
 
     // Fetch the signerAdd message from engine 1
-    const rpcResult = await clientForServer1.getAllSignerMessagesByFid(protobufs.FidRequest.create({ fid }));
+    const rpcResult = await clientForServer1.getAllSignerMessagesByFid(grpc.FidRequest.create({ fid }));
     expect(rpcResult.isOk()).toBeTruthy();
     expect(rpcResult._unsafeUnwrap().messages.length).toEqual(1);
     const rpcSignerAdd = rpcResult._unsafeUnwrap().messages[0] as protobufs.Message;
@@ -153,7 +154,7 @@ describe('Multi peer sync engine', () => {
       await addMessagesWithTimestamps(engine1, [30663167, 30663169, 30663172]);
 
       // grab a new snapshot from the RPC for engine1
-      const newSnapshotResult = await clientForServer1.getSyncSnapshotByPrefix(protobufs.TrieNodePrefix.create());
+      const newSnapshotResult = await clientForServer1.getSyncSnapshotByPrefix(grpc.TrieNodePrefix.create());
       expect(newSnapshotResult.isOk()).toBeTruthy();
       const newSnapshot = newSnapshotResult._unsafeUnwrap();
 

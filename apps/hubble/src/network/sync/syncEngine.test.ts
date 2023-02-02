@@ -1,3 +1,4 @@
+import * as grpc from '@farcaster/grpc';
 import * as protobufs from '@farcaster/protobufs';
 import { FarcasterNetwork } from '@farcaster/protobufs';
 import { Factories, getFarcasterTime, HubRpcClient } from '@farcaster/utils';
@@ -185,7 +186,7 @@ describe('SyncEngine', () => {
       called = true;
 
       // Return an empty child map so sync will finish with a noop
-      const emptyMetadata = protobufs.TrieNodeMetadataResponse.create({
+      const emptyMetadata = grpc.TrieNodeMetadataResponse.create({
         prefix: new Uint8Array(),
         numMessages: 1000,
         hash: '',

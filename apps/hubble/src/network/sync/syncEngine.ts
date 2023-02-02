@@ -1,3 +1,4 @@
+import * as grpc from '@farcaster/grpc';
 import * as protobufs from '@farcaster/protobufs';
 import { getFarcasterTime, HubError, HubResult, HubRpcClient } from '@farcaster/utils';
 import { err, ok } from 'neverthrow';
@@ -117,7 +118,7 @@ class SyncEngine {
     }
 
     let result = true;
-    const messagesResult = await rpcClient.getAllMessagesBySyncIds(protobufs.SyncIds.create({ syncIds }));
+    const messagesResult = await rpcClient.getAllMessagesBySyncIds(grpc.SyncIds.create({ syncIds }));
     await messagesResult.match(
       async (msgs) => {
         await this.mergeMessages(msgs.messages, rpcClient);
@@ -171,9 +172,7 @@ class SyncEngine {
     // If the node has fewer than HASHES_PER_FETCH, just fetch them all in go, otherwise,
     // iterate through the node's children and fetch them in batches.
     if (theirNode.numMessages <= HASHES_PER_FETCH) {
-      const result = await rpcClient.getAllSyncIdsByPrefix(
-        protobufs.TrieNodePrefix.create({ prefix: theirNode.prefix })
-      );
+      const result = await rpcClient.getAllSyncIdsByPrefix(grpc.TrieNodePrefix.create({ prefix: theirNode.prefix }));
       result.match(
         (ids) => {
           missingHashes.push(...ids.syncIds);
@@ -195,7 +194,7 @@ class SyncEngine {
 
   async fetchMissingHashesByPrefix(prefix: Uint8Array, rpcClient: HubRpcClient): Promise<Uint8Array[]> {
     const ourNode = this._trie.getTrieNodeMetadata(prefix);
-    const theirNodeResult = await rpcClient.getSyncMetadataByPrefix(protobufs.TrieNodePrefix.create({ prefix }));
+    const theirNodeResult = await rpcClient.getSyncMetadataByPrefix(grpc.TrieNodePrefix.create({ prefix }));
 
     const missingHashes: Uint8Array[] = [];
     await theirNodeResult.match(
@@ -265,7 +264,7 @@ class SyncEngine {
       return err(new HubError('bad_request.invalid_param', 'Invalid fid'));
     }
 
-    const custodyEventResult = await rpcClient.getIdRegistryEvent(protobufs.FidRequest.create({ fid }));
+    const custodyEventResult = await rpcClient.getIdRegistryEvent(grpc.FidRequest.create({ fid }));
     if (custodyEventResult.isErr()) {
       return err(new HubError('unavailable.network_failure', 'Failed to fetch custody event'));
     }
@@ -278,7 +277,7 @@ class SyncEngine {
     // Probably not required to fetch the signer messages, but doing it here means
     // sync will complete in one round (prevents messages failing to merge due to missed or out of
     // order signer message)
-    const signerMessagesResult = await rpcClient.getAllSignerMessagesByFid(protobufs.FidRequest.create({ fid }));
+    const signerMessagesResult = await rpcClient.getAllSignerMessagesByFid(grpc.FidRequest.create({ fid }));
     if (signerMessagesResult.isErr()) {
       return err(new HubError('unavailable.network_failure', 'Failed to fetch signer messages'));
     }
@@ -296,7 +295,7 @@ class SyncEngine {
   }
 }
 
-const fromNodeMetadataResponse = (response: protobufs.TrieNodeMetadataResponse): NodeMetadata => {
+const fromNodeMetadataResponse = (response: grpc.TrieNodeMetadataResponse): NodeMetadata => {
   const children = new Map<number, NodeMetadata>();
   for (let i = 0; i < response.children.length; i++) {
     const child = response.children[i];

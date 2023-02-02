@@ -1,3 +1,4 @@
+import * as grpc from '@farcaster/grpc';
 import * as protobufs from '@farcaster/protobufs';
 import {
   bytesToHexString,
@@ -16,13 +17,13 @@ import * as types from './types';
 /*                           Event Response                                   */
 /* -------------------------------------------------------------------------- */
 
-export const deserializeEventResponse = (protobuf: protobufs.EventResponse): HubResult<types.EventResponse> => {
+export const deserializeEventResponse = (protobuf: grpc.EventResponse): HubResult<types.EventResponse> => {
   const type = protobuf.type;
 
   switch (type) {
-    case protobufs.EventType.EVENT_TYPE_MERGE_MESSAGE:
-    case protobufs.EventType.EVENT_TYPE_PRUNE_MESSAGE:
-    case protobufs.EventType.EVENT_TYPE_REVOKE_MESSAGE: {
+    case grpc.EventType.EVENT_TYPE_MERGE_MESSAGE:
+    case grpc.EventType.EVENT_TYPE_PRUNE_MESSAGE:
+    case grpc.EventType.EVENT_TYPE_REVOKE_MESSAGE: {
       return deserializeMessage(protobuf.message as protobufs.Message).map((message) => {
         return {
           _protobuf: protobuf,
@@ -31,7 +32,7 @@ export const deserializeEventResponse = (protobuf: protobufs.EventResponse): Hub
         };
       });
     }
-    case protobufs.EventType.EVENT_TYPE_MERGE_ID_REGISTRY_EVENT: {
+    case grpc.EventType.EVENT_TYPE_MERGE_ID_REGISTRY_EVENT: {
       return deserializeIdRegistryEvent(protobuf.idRegistryEvent as protobufs.IdRegistryEvent).map(
         (idRegistryEvent) => {
           return {
@@ -42,7 +43,7 @@ export const deserializeEventResponse = (protobuf: protobufs.EventResponse): Hub
         }
       );
     }
-    case protobufs.EventType.EVENT_TYPE_MERGE_NAME_REGISTRY_EVENT: {
+    case grpc.EventType.EVENT_TYPE_MERGE_NAME_REGISTRY_EVENT: {
       return deserializeNameRegistryEvent(protobuf.nameRegistryEvent as protobufs.NameRegistryEvent).map(
         (nameRegistryEvent) => {
           return {

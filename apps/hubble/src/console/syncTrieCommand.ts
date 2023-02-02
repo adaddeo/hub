@@ -1,4 +1,4 @@
-import { TrieNodePrefix } from '@farcaster/protobufs';
+import { TrieNodePrefix } from '@farcaster/grpc';
 import { HubError, HubRpcClient } from '@farcaster/utils';
 import { ConsoleCommandInterface } from './console';
 

@@ -1,3 +1,4 @@
+import * as grpc from '@farcaster/grpc';
 import * as protobufs from '@farcaster/protobufs';
 import { Factories, getHubRpcClient, HubError, HubRpcClient } from '@farcaster/utils';
 import SyncEngine from '~/network/sync/syncEngine';
@@ -89,14 +90,14 @@ describe('getCast', () => {
 
     test('succeeds', async () => {
       await engine.mergeMessage(castAdd);
-      const casts = await client.getCastsByFid(protobufs.FidRequest.create({ fid }));
+      const casts = await client.getCastsByFid(grpc.FidRequest.create({ fid }));
       expect(protobufs.Message.toJSON(casts._unsafeUnwrap().messages.at(0) as protobufs.Message)).toEqual(
         protobufs.Message.toJSON(castAdd)
       );
     });
 
     test('returns empty array without casts', async () => {
-      const casts = await client.getCastsByFid(protobufs.FidRequest.create({ fid }));
+      const casts = await client.getCastsByFid(grpc.FidRequest.create({ fid }));
       expect(casts._unsafeUnwrap().messages).toEqual([]);
     });
   });
@@ -131,8 +132,9 @@ describe('getCast', () => {
       await engine.mergeMessage(castAdd);
       for (let i = 0; i < (castAdd.data?.castAddBody?.mentions.length as number); i++) {
         const casts = await client.getCastsByMention(
-          protobufs.FidRequest.create({ fid: castAdd.data?.castAddBody?.mentions[i] as number })
+          grpc.FidRequest.create({ fid: castAdd.data?.castAddBody?.mentions[i] as number })
         );
+
         expect(protobufs.Message.toJSON(casts._unsafeUnwrap().messages.at(0) as protobufs.Message)).toEqual(
           protobufs.Message.toJSON(castAdd)
         );
@@ -142,7 +144,7 @@ describe('getCast', () => {
     test('returns empty array without casts', async () => {
       for (let i = 0; i < (castAdd.data?.castAddBody?.mentions.length as number); i++) {
         const casts = await client.getCastsByMention(
-          protobufs.FidRequest.create({ fid: castAdd.data?.castAddBody?.mentions[i] as number })
+          grpc.FidRequest.create({ fid: castAdd.data?.castAddBody?.mentions[i] as number })
         );
         expect(casts._unsafeUnwrap().messages).toEqual([]);
       }

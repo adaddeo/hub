@@ -1,3 +1,4 @@
+import * as grpc from '@farcaster/grpc';
 import * as protobufs from '@farcaster/protobufs';
 import { Factories, getHubRpcClient, HubRpcClient } from '@farcaster/utils';
 import Server from '~/rpc/server';
@@ -43,24 +44,24 @@ beforeAll(async () => {
 });
 
 describe('subscribe', () => {
-  const setupSubscription = (eventTypes?: protobufs.EventType[]) => {
-    let stream: protobufs.ClientReadableStream<protobufs.EventResponse>;
-    const events: [protobufs.EventType, any][] = [];
+  const setupSubscription = (eventTypes?: grpc.EventType[]) => {
+    let stream: grpc.ClientReadableStream<grpc.EventResponse>;
+    const events: [grpc.EventType, any][] = [];
 
     beforeEach(async () => {
-      const request = protobufs.SubscribeRequest.create({ eventTypes: eventTypes ?? [] });
+      const request = grpc.SubscribeRequest.create({ eventTypes: eventTypes ?? [] });
 
       stream = (await client.subscribe(request))._unsafeUnwrap();
-      stream.on('data', (response: protobufs.EventResponse) => {
+      stream.on('data', (response: grpc.EventResponse) => {
         if (
-          response.type === protobufs.EventType.EVENT_TYPE_MERGE_MESSAGE ||
-          response.type === protobufs.EventType.EVENT_TYPE_PRUNE_MESSAGE ||
-          response.type === protobufs.EventType.EVENT_TYPE_REVOKE_MESSAGE
+          response.type === grpc.EventType.EVENT_TYPE_MERGE_MESSAGE ||
+          response.type === grpc.EventType.EVENT_TYPE_PRUNE_MESSAGE ||
+          response.type === grpc.EventType.EVENT_TYPE_REVOKE_MESSAGE
         ) {
           events.push([response.type, protobufs.Message.toJSON(response.message!)]);
-        } else if (response.type === protobufs.EventType.EVENT_TYPE_MERGE_ID_REGISTRY_EVENT) {
+        } else if (response.type === grpc.EventType.EVENT_TYPE_MERGE_ID_REGISTRY_EVENT) {
           events.push([response.type, protobufs.IdRegistryEvent.toJSON(response.idRegistryEvent!)]);
-        } else if (response.type === protobufs.EventType.EVENT_TYPE_MERGE_NAME_REGISTRY_EVENT) {
+        } else if (response.type === grpc.EventType.EVENT_TYPE_MERGE_NAME_REGISTRY_EVENT) {
           events.push([response.type, protobufs.NameRegistryEvent.toJSON(response.nameRegistryEvent!)]);
         }
       });
@@ -82,15 +83,15 @@ describe('subscribe', () => {
       await engine.mergeMessage(castAdd);
       await sleep(1_000); // Wait for server to send events over stream
       expect(events).toEqual([
-        [protobufs.EventType.EVENT_TYPE_MERGE_ID_REGISTRY_EVENT, protobufs.IdRegistryEvent.toJSON(custodyEvent)],
-        [protobufs.EventType.EVENT_TYPE_MERGE_MESSAGE, protobufs.Message.toJSON(signerAdd)],
-        [protobufs.EventType.EVENT_TYPE_MERGE_MESSAGE, protobufs.Message.toJSON(castAdd)],
+        [grpc.EventType.EVENT_TYPE_MERGE_ID_REGISTRY_EVENT, protobufs.IdRegistryEvent.toJSON(custodyEvent)],
+        [grpc.EventType.EVENT_TYPE_MERGE_MESSAGE, protobufs.Message.toJSON(signerAdd)],
+        [grpc.EventType.EVENT_TYPE_MERGE_MESSAGE, protobufs.Message.toJSON(castAdd)],
       ]);
     });
   });
 
   describe('with one type filter', () => {
-    const { events } = setupSubscription([protobufs.EventType.EVENT_TYPE_MERGE_MESSAGE]);
+    const { events } = setupSubscription([grpc.EventType.EVENT_TYPE_MERGE_MESSAGE]);
 
     test('emits event', async () => {
       await engine.mergeIdRegistryEvent(custodyEvent);
@@ -99,17 +100,17 @@ describe('subscribe', () => {
       await engine.mergeMessage(castAdd);
       await sleep(1_000); // Wait for server to send events over stream
       expect(events).toEqual([
-        [protobufs.EventType.EVENT_TYPE_MERGE_MESSAGE, protobufs.Message.toJSON(signerAdd)],
-        [protobufs.EventType.EVENT_TYPE_MERGE_MESSAGE, protobufs.Message.toJSON(castAdd)],
+        [grpc.EventType.EVENT_TYPE_MERGE_MESSAGE, protobufs.Message.toJSON(signerAdd)],
+        [grpc.EventType.EVENT_TYPE_MERGE_MESSAGE, protobufs.Message.toJSON(castAdd)],
       ]);
     });
   });
 
   describe('with multiple type filters', () => {
     const { events } = setupSubscription([
-      protobufs.EventType.EVENT_TYPE_MERGE_MESSAGE,
-      protobufs.EventType.EVENT_TYPE_MERGE_NAME_REGISTRY_EVENT,
-      protobufs.EventType.EVENT_TYPE_MERGE_ID_REGISTRY_EVENT,
+      grpc.EventType.EVENT_TYPE_MERGE_MESSAGE,
+      grpc.EventType.EVENT_TYPE_MERGE_NAME_REGISTRY_EVENT,
+      grpc.EventType.EVENT_TYPE_MERGE_ID_REGISTRY_EVENT,
     ]);
 
     test('emits event', async () => {
@@ -119,13 +120,10 @@ describe('subscribe', () => {
       await engine.mergeMessage(castAdd);
       await sleep(1_000); // Wait for server to send events over stream
       expect(events).toEqual([
-        [protobufs.EventType.EVENT_TYPE_MERGE_ID_REGISTRY_EVENT, protobufs.IdRegistryEvent.toJSON(custodyEvent)],
-        [
-          protobufs.EventType.EVENT_TYPE_MERGE_NAME_REGISTRY_EVENT,
-          protobufs.NameRegistryEvent.toJSON(nameRegistryEvent),
-        ],
-        [protobufs.EventType.EVENT_TYPE_MERGE_MESSAGE, protobufs.Message.toJSON(signerAdd)],
-        [protobufs.EventType.EVENT_TYPE_MERGE_MESSAGE, protobufs.Message.toJSON(castAdd)],
+        [grpc.EventType.EVENT_TYPE_MERGE_ID_REGISTRY_EVENT, protobufs.IdRegistryEvent.toJSON(custodyEvent)],
+        [grpc.EventType.EVENT_TYPE_MERGE_NAME_REGISTRY_EVENT, protobufs.NameRegistryEvent.toJSON(nameRegistryEvent)],
+        [grpc.EventType.EVENT_TYPE_MERGE_MESSAGE, protobufs.Message.toJSON(signerAdd)],
+        [grpc.EventType.EVENT_TYPE_MERGE_MESSAGE, protobufs.Message.toJSON(castAdd)],
       ]);
     });
   });

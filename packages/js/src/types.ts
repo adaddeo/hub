@@ -1,3 +1,4 @@
+import * as grpc from '@farcaster/grpc';
 import * as protobufs from '@farcaster/protobufs';
 
 export {
@@ -139,26 +140,26 @@ export type NameRegistryEvent = Readonly<{
 }>;
 
 type GenericEventResponse = {
-  _protobuf: protobufs.EventResponse;
-  type: protobufs.EventType;
+  _protobuf: grpc.EventResponse;
+  type: grpc.EventType;
 };
 
 export type MessageEventResponse = GenericEventResponse & {
   type:
-    | protobufs.EventType.EVENT_TYPE_MERGE_MESSAGE
-    | protobufs.EventType.EVENT_TYPE_PRUNE_MESSAGE
-    | protobufs.EventType.EVENT_TYPE_REVOKE_MESSAGE;
+    | grpc.EventType.EVENT_TYPE_MERGE_MESSAGE
+    | grpc.EventType.EVENT_TYPE_PRUNE_MESSAGE
+    | grpc.EventType.EVENT_TYPE_REVOKE_MESSAGE;
   message: Message;
   deleted_messages?: Message[];
 };
 
 export type IdRegistryEventResponse = GenericEventResponse & {
-  type: protobufs.EventType.EVENT_TYPE_MERGE_ID_REGISTRY_EVENT;
+  type: grpc.EventType.EVENT_TYPE_MERGE_ID_REGISTRY_EVENT;
   idRegistryEvent: IdRegistryEvent;
 };
 
 export type NameRegistryEventResponse = GenericEventResponse & {
-  type: protobufs.EventType.EVENT_TYPE_MERGE_NAME_REGISTRY_EVENT;
+  type: grpc.EventType.EVENT_TYPE_MERGE_NAME_REGISTRY_EVENT;
   nameRegistryEvent: NameRegistryEvent;
 };
 

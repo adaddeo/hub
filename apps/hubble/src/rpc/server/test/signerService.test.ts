@@ -1,3 +1,4 @@
+import * as grpc from '@farcaster/grpc';
 import * as protobufs from '@farcaster/protobufs';
 import { Factories, getHubRpcClient, HubError, HubRpcClient } from '@farcaster/utils';
 import SyncEngine from '~/network/sync/syncEngine';
@@ -49,28 +50,28 @@ describe('getSigner', () => {
     await engine.mergeMessage(signerAdd);
     // const result = await client.getSigner(fid, signer.signerKey);
     // expect(result._unsafeUnwrap()).toEqual(signerAdd.message);
-    const result = await client.getSigner(protobufs.SignerRequest.create({ fid, signer: signer.signerKey }));
+    const result = await client.getSigner(grpc.SignerRequest.create({ fid, signer: signer.signerKey }));
     expect(protobufs.Message.toJSON(result._unsafeUnwrap())).toEqual(protobufs.Message.toJSON(signerAdd));
   });
 
   test('fails if signer is missing', async () => {
     // const result = await client.getSigner(fid, signer.signerKey);
     // expect(result._unsafeUnwrapErr().errCode).toEqual('not_found');
-    const result = await client.getSigner(protobufs.SignerRequest.create({ fid, signer: signer.signerKey }));
+    const result = await client.getSigner(grpc.SignerRequest.create({ fid, signer: signer.signerKey }));
     expect(result._unsafeUnwrapErr().errCode).toEqual('not_found');
   });
 
   test('fails without signer key', async () => {
     // const result = await client.getSigner(fid, new Uint8Array());
     // expect(result._unsafeUnwrapErr()).toEqual(new HubError('bad_request.validation_failure', 'publicKey is missing'));
-    const result = await client.getSigner(protobufs.SignerRequest.create({ fid, signer: new Uint8Array() }));
+    const result = await client.getSigner(grpc.SignerRequest.create({ fid, signer: new Uint8Array() }));
     expect(result._unsafeUnwrapErr()).toEqual(new HubError('bad_request.validation_failure', 'publicKey is missing'));
   });
 
   test('fails without fid', async () => {
     // const result = await client.getSigner(new Uint8Array(), signer.signerKey);
     // expect(result._unsafeUnwrapErr()).toEqual(new HubError('bad_request.validation_failure', 'fid is missing'));
-    const result = await client.getSigner(protobufs.SignerRequest.create({ fid: 0, signer: signer.signerKey }));
+    const result = await client.getSigner(grpc.SignerRequest.create({ fid: 0, signer: signer.signerKey }));
     expect(result._unsafeUnwrapErr()).toEqual(new HubError('bad_request.validation_failure', 'fid is missing'));
   });
 });
@@ -84,7 +85,7 @@ describe('getSignersByFid', () => {
     await engine.mergeMessage(signerAdd);
     // const result = await client.getSignersByFid(fid);
     // expect(result._unsafeUnwrap()).toEqual([signerAdd.message]);
-    const result = await client.getSignersByFid(protobufs.FidRequest.create({ fid }));
+    const result = await client.getSignersByFid(grpc.FidRequest.create({ fid }));
     expect(result._unsafeUnwrap().messages.map((m) => protobufs.Message.toJSON(m))).toEqual(
       [signerAdd].map((m) => protobufs.Message.toJSON(m))
     );
@@ -93,7 +94,7 @@ describe('getSignersByFid', () => {
   test('returns empty array without messages', async () => {
     // const result = await client.getSignersByFid(fid);
     // expect(result._unsafeUnwrap()).toEqual([]);
-    const result = await client.getSignersByFid(protobufs.FidRequest.create({ fid }));
+    const result = await client.getSignersByFid(grpc.FidRequest.create({ fid }));
     expect(result._unsafeUnwrap().messages).toEqual([]);
   });
 });
@@ -103,7 +104,7 @@ describe('getIdRegistryEvent', () => {
     await engine.mergeIdRegistryEvent(custodyEvent);
     // const result = await client.getIdRegistryEvent(fid);
     // expect(result._unsafeUnwrap()).toEqual(custodyEvent.event);
-    const result = await client.getIdRegistryEvent(protobufs.FidRequest.create({ fid }));
+    const result = await client.getIdRegistryEvent(grpc.FidRequest.create({ fid }));
     expect(protobufs.IdRegistryEvent.toJSON(result._unsafeUnwrap())).toEqual(
       protobufs.IdRegistryEvent.toJSON(custodyEvent)
     );
@@ -112,7 +113,7 @@ describe('getIdRegistryEvent', () => {
   test('fails when event is missing', async () => {
     // const result = await client.getIdRegistryEvent(fid);
     // expect(result._unsafeUnwrapErr().errCode).toEqual('not_found');
-    const result = await client.getIdRegistryEvent(protobufs.FidRequest.create({ fid }));
+    const result = await client.getIdRegistryEvent(grpc.FidRequest.create({ fid }));
     expect(result._unsafeUnwrapErr().errCode).toEqual('not_found');
   });
 });
@@ -122,12 +123,12 @@ describe('getFids', () => {
     await engine.mergeIdRegistryEvent(custodyEvent);
     // const result = await client.getFids();
     // expect(result._unsafeUnwrap()).toEqual([custodyEvent.fid()]);
-    const result = await client.getFids(protobufs.Empty.create());
+    const result = await client.getFids(grpc.Empty.create());
     expect(result._unsafeUnwrap().fids).toEqual([custodyEvent.fid]);
   });
 
   test('returns empty array without events', async () => {
-    const result = await client.getFids(protobufs.Empty.create());
+    const result = await client.getFids(grpc.Empty.create());
     expect(result._unsafeUnwrap().fids).toEqual([]);
   });
 });

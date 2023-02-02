@@ -1,4 +1,4 @@
-import { Empty } from '@farcaster/protobufs';
+import { Empty } from '@farcaster/grpc';
 import { HubError, HubRpcClient } from '@farcaster/utils';
 import { ConsoleCommandInterface } from './console';
 
